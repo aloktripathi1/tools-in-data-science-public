@@ -49,4 +49,78 @@
       }
     });
   })();
+
+  /* Collapsible accordion for top-level sidebar sections.
+     Targets <li><p><strong>…</strong></p><ul>…</ul></li> patterns only —
+     the <p> wrapper is produced by markdown when a blank line precedes the
+     nested list, which only happens for top-level sections. */
+  (function () {
+    var menu = document.querySelector(".book-menu-content");
+    if (!menu) return;
+
+    var sections = [];
+    menu.querySelectorAll("li").forEach(function (li) {
+      var p = li.firstElementChild;
+      if (!p || p.tagName !== "P") return;
+      var strong = p.firstElementChild;
+      if (!strong || strong.tagName !== "STRONG" || p.children.length !== 1) return;
+      var ul = li.querySelector(":scope > ul");
+      if (!ul) return;
+      sections.push({ li: li, p: p, ul: ul });
+    });
+
+    if (!sections.length) return;
+
+    sections.forEach(function (s) {
+      /* Wrap the child <ul> so we can apply a grid-row transition on the wrapper */
+      var body = document.createElement("div");
+      body.className = "tds-accordion-body";
+      s.ul.parentNode.insertBefore(body, s.ul);
+      body.appendChild(s.ul);
+
+      /* Turn the <p> into a focusable button-like element */
+      s.p.classList.add("tds-accordion-header");
+      s.p.setAttribute("role", "button");
+      s.p.setAttribute("tabindex", "0");
+
+      /* Chevron indicator */
+      var chevron = document.createElement("span");
+      chevron.className = "tds-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      s.p.appendChild(chevron);
+
+      /* Auto-expand the section that contains the current page */
+      var open = !!s.ul.querySelector("a.active");
+      applyState(s, open);
+
+      s.p.addEventListener("click", function () { toggle(s); });
+      s.p.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle(s);
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          shiftFocus(sections, s, 1);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          shiftFocus(sections, s, -1);
+        }
+      });
+    });
+
+    function applyState(s, open) {
+      s.li.classList.toggle("tds-accordion-open", open);
+      s.p.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    function toggle(s) {
+      applyState(s, !s.li.classList.contains("tds-accordion-open"));
+    }
+
+    function shiftFocus(sections, current, dir) {
+      var idx = sections.indexOf(current);
+      var target = sections[idx + dir];
+      if (target) target.p.focus();
+    }
+  })();
 </script>

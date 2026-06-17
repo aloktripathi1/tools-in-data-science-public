@@ -28,3 +28,58 @@ html[data-user-theme="dark"] {
   color: var(--color-link);
   font-weight: 600;
 }
+
+// Collapsible accordion for top-level sidebar sections.
+.tds-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover strong {
+    color: var(--color-link);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+}
+
+// Border-based chevron that rotates to show open/closed state.
+.tds-chevron {
+  flex-shrink: 0;
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-left: 0.5rem;
+  border-right: 0.13em solid currentColor;
+  border-bottom: 0.13em solid currentColor;
+  transform: rotate(-45deg); // points right when closed
+  transition: transform 0.25s ease;
+  opacity: 0.65;
+  align-self: center;
+}
+
+li.tds-accordion-open > .tds-accordion-header .tds-chevron {
+  transform: rotate(45deg); // points down when open
+}
+
+// Grid-row transition gives a smooth height animation without needing
+// a fixed max-height.
+.tds-accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+
+  > ul {
+    overflow: hidden;
+    min-height: 0;
+  }
+}
+
+li.tds-accordion-open > .tds-accordion-body {
+  grid-template-rows: 1fr;
+}
